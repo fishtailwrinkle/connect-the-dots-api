@@ -12,18 +12,53 @@ const {ConnectTheDots} = require('./models');
 router.get('/', (req, res) => {
 	ConnectTheDots
 		.find()
+		//.then((err,count) => console.log(count))
+		//.aggregate([{$sample: {size:1}}])
 		.then(drawings => {
 			res.json(drawings.map(drawing => drawing.serialize()));
 		})
+		
+		//.then(drawing => res.json(drawing.serialize()))
 		.catch(err => {
 			console.error(err);
 			res.status(500).json({error: 'something went terribly wrong'});
 		});
 });
 
-router.get('/:accessCode', (req, res) => {
+router.get('/random', (req, res) => {
 	ConnectTheDots
-		.findOne({accessCode: req.params.accessCode})
+		.find()
+		//.aggregate([{$sample: {size:1}}])
+		.then(drawings => {
+
+			let size;
+			/*res.json(drawings.map((drawing,index) => {
+				drawing.serialize();
+				size = index;
+			}));
+			*/
+			drawings.map((drawing, index) => {
+				size = index+1;
+			})
+
+			let random = Math.floor(Math.random() * size);
+
+			//return ConnectTheDots.count();
+			//return drawings[1];
+			res.json(drawings[random].serialize());
+		})
+		//.then(content => console.log(content))
+		//.then(count => console.log(count))
+		.catch(err => {
+			console.error(err);
+			res.status(500).json({error: 'something went terribly wrong'});
+		});
+});
+
+
+router.get('/:id', (req, res) => {
+	ConnectTheDots
+		.findOne({_id: req.params.id})
 		.then(drawing => res.json(drawing.serialize()))
 		.catch(err => {
 			console.error(err);
@@ -32,7 +67,8 @@ router.get('/:accessCode', (req, res) => {
 });
 
 router.post('/', jsonParser, (req, res) => {
-	const requiredFields = ['accessCode', 'vocab', 'pixels'];
+	console.log(req.body);
+	/*const requiredFields = ['accessCode', 'vocab', 'pixels'];
 
 	for (let i=0; i<requiredFields; i++) {
 		const field = requiredFields[i];
@@ -42,24 +78,26 @@ router.post('/', jsonParser, (req, res) => {
 			console.error(message);
 			return res.status(400).send(message);
 		}
-	}
+	}*/
 
 	ConnectTheDots
 		.create({
-			accessCode: req.body.accessCode,
+			//accessCode: req.body.accessCode,
 			vocab: req.body.vocab,
-			pixels: req.body.pixels
+			pixels: JSON.stringify(req.body.pixels)
 		})
 		.then(drawing => res.status(201).json(drawing.serialize()))
 		.catch(err => {
 			console.error(err);
 			res.status(500).json({error: 'something went terribly wrong'});
 		});
+		
 });
 
 router.delete('/:accessCode', (req, res) => {
 	ConnectTheDots
-		.deleteOne({accessCode: req.params.accessCode})
+		//.deleteOne({accessCode: req.params.accessCode})
+		.deleteOne({id: req.params.id})
 		.then(() => {
 			res.status(204).json({message: 'success'});
 		})

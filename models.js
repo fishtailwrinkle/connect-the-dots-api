@@ -4,8 +4,8 @@ const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
 const connectTheDotsSchema = mongoose.Schema({
-	accessCode: {type: String, required: true},
-	vocab: {type: String, required: true},	
+	//accessCode: {type: String, unique: true},
+	vocab: {type: String},	
 	pixels: {type: String}
 });
 
